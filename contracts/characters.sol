@@ -114,6 +114,12 @@ contract Characters is Initializable, ERC721Upgradeable, AccessControlUpgradeabl
     mapping(uint256 => uint256) public raidsDone;
     mapping(uint256 => uint256) public raidsWon;
 
+    uint256 public constant NFTVAR_SIMPLEQUEST_ID = 100;
+    uint256 public constant NFTVAR_SIMPLEQUEST_PROGRESS = 101;
+    uint256 public constant NFTVAR_REPUTATION = 102;
+
+    mapping(uint256 => mapping(uint256 => uint256)) public nftVars; // nftID, fieldID, value
+
     event NewCharacter(uint256 indexed character, address indexed minter);
     event LevelUp(address indexed owner, uint256 indexed character, uint16 level);
 
@@ -313,6 +319,25 @@ contract Characters is Initializable, ERC721Upgradeable, AccessControlUpgradeabl
 
     function canRaid(address user, uint256 id) public view returns (bool) {
         return ownerOf(id) == user && getStaminaPoints(id) > 0;
+    }
+
+    function setNFTVar(uint256 id, uint256 field, uint256 value) public restricted {
+        nftVar[id][field] = value;
+    }
+
+    function setNFTVars(uint256 id, uint256[] calldata fields, uint256[] calldata values) public restricted {
+        for(uint i = 0; i < fields.length; i++)
+            nftVar[id][fields[i]] = values[i];
+    }
+
+    function getNFTVar(uint256 id, uint256 field) public view returns (uint256) {
+        return nftVar[id][field];
+    }
+
+    function getNFTVars(uint256 id, uint256[] calldata fields) public view returns(uint256[] memory values) {
+        values = new uint256[fields.length];
+        for(uint i = 0; fields.length; i++)
+            values[i] = nftVar[id][fields[i]];
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override {
